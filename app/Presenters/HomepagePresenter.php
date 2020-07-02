@@ -68,15 +68,48 @@ final class HomepagePresenter extends Nette\Application\UI\Presenter
             $name = NULL;
 
             foreach ($channels as $channel) {
-                if (!$channel || ($channel && !$channel->channelGroup)) {
+                $item = [];
+
+                if (!$channel || ($channel && !$channel->channelGroup))
                     continue;
-                }
 
-                if (!$name || $name != $channel->channelGroup) {
+                if (!$name || $name != $channel->channelGroup)
                     $name = $this->channelGroupModel->getItemById($channel->channelGroup);
+
+                /* add <br> element */
+                $currentName = $inputId == "nameId" ? $channel->name : $channel->description;
+                /* find the position of the first occurrence of a case-insensitive */
+                $pos = stripos($currentName, $value);
+                $length = strlen($currentName);
+                $valueLength = strlen($value);
+                $newName = "";
+
+                for ($i = 0; $i < $length; $i++) {
+                    $letter = $currentName[$i];
+                    /* compare each letter from value and db */
+                    if ($i == $pos) {
+                        $newName .= "<b>";
+                        for ($j = $i; $j < $valueLength + $i; $j++) {
+                            $newName .= $currentName[$j];
+                        }
+                        $i = $j - 1;
+                        $newName .= "</b>";
+                    }
+                    else {
+                        $newName .= $letter;
+                    }
                 }
 
-                $channelGroups[$name->name][] = $channel;
+                if ($inputId == "nameId") {
+                    $item["name"] = Nette\Utils\Html::el()->setHtml($newName);
+                    $item["description"] = $channel->description;
+                }
+                else {
+                    $item["name"] = $channel->name;
+                    $item["description"] = Nette\Utils\Html::el()->setHtml($newName);
+                }
+
+                $channelGroups[$name->name][] = $item;
             }
         }
 

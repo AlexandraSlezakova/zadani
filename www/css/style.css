@@ -1,0 +1,70 @@
+html,
+body,
+.hv-100 {
+  height: 100%;
+}
+.d-none {
+  display: none;
+}
+.pr-0 {
+  padding-right: 0;
+}
+.pl-0 {
+  padding-left: 0;
+}
+.dataTables_wrapper {
+  margin-bottom: 30px;
+}
+.wrapper {
+  float: none;
+  margin: 30px auto;
+}
+.wrapper .result-table {
+  width: 100%;
+  margin-bottom: 20px;
+}
+.wrapper .result-table thead {
+  display: none;
+}
+.wrapper .result-table .group-name {
+  text-align: center;
+  font-weight: bold;
+  padding: 10px 0;
+  background-color: antiquewhite !important;
+}
+.wrapper .result-table td {
+  width: 33.333%;
+  border: 1px solid #d4d2d2;
+  padding: 5px;
+}
+.wrapper .result-table tr:nth-child(2n) {
+  background-color: #fcf5ee;
+}
+.filter-label {
+  border: 1px solid #d4d2d2;
+  border-bottom: 0;
+  text-align: center;
+  padding: 5px 0;
+}
+.filter-label.second {
+  border-left: none;
+  border-right: none;
+}
+.filter-input {
+  border: 1px solid #d4d2d2;
+  padding: 5px 0;
+  border-bottom: 0;
+}
+.filter-input.second {
+  border-left: none;
+  border-right: none;
+}
+.filter-input input {
+  width: 95%;
+  margin: 0 auto;
+  display: block;
+  background: white;
+  border-radius: 5px;
+  border: 1px solid #d4d2d2;
+}
+/*# sourceMappingURL=style.css.map */
