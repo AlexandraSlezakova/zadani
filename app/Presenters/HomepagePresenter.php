@@ -32,7 +32,7 @@ final class HomepagePresenter extends Nette\Application\UI\Presenter
         }
         $this->template->channelGroups = $channelGroups;
     }
-    
+
     protected function createComponentFilterForm(): Form
     {
         $form = new Form;
@@ -114,7 +114,7 @@ final class HomepagePresenter extends Nette\Application\UI\Presenter
                     if (!$name || $name != $channel->channelGroup)
                         $name = $this->channelGroupModel->getItemById($channel->channelGroup);
 
-                    /* add <br> element */
+                    /* add <b> element */
                     $newName = $this->channelsModel->getEditedName($channel->description, $nameInput);
                     $item["name"] = $channel->name;
                     $item["description"] = Nette\Utils\Html::el()->setHtml($newName);
