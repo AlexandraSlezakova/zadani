@@ -24,7 +24,7 @@ class BaseModel
         $this->db = $db;
     }
 
-    public function getItemById(int $id): ActiveRow
+    public function getItemById($id): ActiveRow
     {
         return $this->db->table($this->table)->where("id", $id)->fetch();
     }
@@ -32,6 +32,11 @@ class BaseModel
     public function getItems(): Selection
     {
         return $this->db->table($this->table);
+    }
+
+    public function getItemsLike($column, $value): Selection
+    {
+        return $this->db->table($this->table)->where($column.' LIKE ?', '%'.$value.'%');
     }
 
 }

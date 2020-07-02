@@ -1,9 +1,10 @@
 $(document).ready(function() {
     $.nette.init();
 
-    $('#channel-table').DataTable({
+    $('#snippet--tableSnippet').DataTable({
         "pagingType": "full_numbers",
         "searching": false,
         "ordering": false,
+        "sDom": 'Rfrtlip',
     } );
 });

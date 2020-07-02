@@ -2,40 +2,53 @@
     <div class="container hv-100">
         <div class="row hv-100">
             <div class="col-12 col-sm-10 wrapper">
+                {form filterForm}
+                    <div class="row">
+                        <div class="col-12 col-md-4 pr-0">
+                            <div class="filter-label">
+                                <label for="channelGroupId">Skupina</label>
+                            </div>
+                            <div class="filter-input">
+                                <input n:name=channelGroup type="text" id="channelGroupId" autocomplete="off"
+                                                           oninput="inputChange('channelGroupId', this.value)">
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-4 pr-0 pl-0">
+                            <div class="filter-label second">
+                                <label for="nameId">Názov</label>
+                            </div>
+                            <div class="filter-input second">
+                                <input n:name=name type="text" id="nameId" autocomplete="off"
+                                                   oninput="inputChange('nameId', this.value)">
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-4 pl-0">
+                            <div class="filter-label">
+                                <label for="descriptionId">Popis</label>
+                            </div>
+                            <div class="filter-input">
+                                <input n:name=description type="text" id="descriptionId" autocomplete="off"
+                                                          oninput="inputChange('descriptionId',this.value)">
+                            </div>
+                        </div>
+                    </div>
+                {/form}
+
                 <div class="row">
                     <div class="col-12">
-                        <table class="result-table" id="channel-table">
-                            <thead class="filter-head">
-                                {form filterForm}
-                                    <tr>
-                                        <th class="filter-label">
-                                            <label for="channelGroupId">Skupina</label>
-                                        </th>
-                                        <th class="filter-label">
-                                            <label for="nameId">Názov</label>
-                                        </th>
-                                        <th class="filter-label">
-                                            <label for="descriptionId">Popis</label>
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <td class="filter-input">
-                                            <input n:name=channelGroup type="text" id="channelGroupId"
-                                                                       oninput="inputChange('channelGroupId', this.value)">
-                                        </td>
-                                        <td class="filter-input">
-                                            <input n:name=name type="text" id="nameId"
-                                                               oninput="inputChange('nameId', this.value)">
-                                        </td>
-                                        <td class="filter-input">
-                                            <input n:name=description type="text" id="descriptionId"
-                                                                      oninput="inputChange('descriptionId',this.value)">
-                                        </td>
-                                    </tr>
-                                {/form}
+                        <table n:snippet="tableSnippet" class="result-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
                             </thead>
 
                             <tbody>
+
                             {foreach $channelGroups as $groupName => $group}
                                 <tr class="group-name">
                                     <td colspan="3">
@@ -69,6 +82,16 @@
                 error: function (xhr, ajaxOptions, thrownError) {
                     console.log(xhr.status);
                     console.log(thrownError);
+                },
+                complete() {
+                    let table = $('#snippet--tableSnippet');
+                    table.DataTable().destroy();
+                    table.DataTable({
+                        "pagingType": "full_numbers",
+                        "searching": false,
+                        "ordering": false,
+                        "sDom": 'Rfrtlip',
+                    } )
                 }
             })
         }
