@@ -6,11 +6,13 @@ body,
 .d-none {
   display: none;
 }
-.pr-0 {
-  padding-right: 0;
-}
-.pl-0 {
-  padding-left: 0;
+@media (min-width: 768px) {
+  .pr-0-md {
+    padding-right: 0;
+  }
+  .pl-0-md {
+    padding-left: 0;
+  }
 }
 .dataTables_wrapper {
   margin-bottom: 30px;
