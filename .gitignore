@@ -1,3 +1,7 @@
 vendor
 temp
 .idea
+app/config/local.neon
+bin
+log
+www/css/style.css.map
