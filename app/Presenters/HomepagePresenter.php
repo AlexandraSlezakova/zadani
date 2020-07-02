@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Presenters;
 
 use App\Model\ChannelGroupsModel;
@@ -26,14 +24,15 @@ final class HomepagePresenter extends Nette\Application\UI\Presenter
     {
         $groups = $this->channelGroupModel->getItems()->order("order");
         $channelGroups = [];
+
         foreach ($groups as $group) {
-            foreach ($group->related('Channels.channelGroup') as $channel) {
+            foreach ($group->related('Channels.channelGroup')->order("order") as $channel) {
                 $channelGroups[$group->name][] = $channel;
             }
         }
         $this->template->channelGroups = $channelGroups;
     }
-
+    
     protected function createComponentFilterForm(): Form
     {
         $form = new Form;
@@ -45,71 +44,85 @@ final class HomepagePresenter extends Nette\Application\UI\Presenter
         return $form;
     }
 
-    public function handleInputChange($inputId, $value)
+    /**
+     * Handle input change
+     * Filtering all wanted values from inputs
+     * @param string $groupInput value from input channel group
+     * @param string $nameInput value from input name
+     * @param string $description value from input description
+     * @throws Nette\Application\AbortException
+     */
+    public function handleInputChange($groupInput, $nameInput, $description)
     {
-        $channelGroups = [];
-        if ($value == "") {
+        if ($groupInput == "" && $nameInput == "" && $description == "") {
             $this->redirect("Homepage:default");
         }
 
-        if ($inputId == "channelGroupId") {
-            $groupNames = $this->channelGroupModel->getItemsLike("id", $value)
+        $channelGroups = [];
+
+        /* channel groups */
+        if ($groupInput != "") {
+            $groupNames = $this->channelGroupModel->getItemsLike("id", $groupInput)
                 ->order("order")->fetchAll();
 
             foreach ($groupNames as $group) {
-                foreach ($group->related('Channels.channelGroup') as $channel) {
+                foreach ($group->related('Channels.channelGroup')->order("order") as $channel) {
                     $channelGroups[$group->name][] = $channel;
                 }
             }
         }
-        else {
-            $column = $inputId == "nameId" ? "name" : "description";
-            $channels = $this->channelsModel->getItemsLike($column, $value)->fetchAll();
-            $name = NULL;
 
-            foreach ($channels as $channel) {
-                $item = [];
+        /* names */
+        if ($nameInput != "") {
+            if (empty($channelGroups)) {
+                $channels = $this->channelsModel->getItemsLike("name", $nameInput)
+                    ->order("order")->fetchAll();
+                $name = NULL;
 
-                if (!$channel || ($channel && !$channel->channelGroup))
-                    continue;
+                foreach ($channels as $channel) {
+                    $item = [];
+                    if (!$channel || ($channel && !$channel->channelGroup))
+                        continue;
 
-                if (!$name || $name != $channel->channelGroup)
-                    $name = $this->channelGroupModel->getItemById($channel->channelGroup);
+                    if (!$name || $name != $channel->channelGroup)
+                        $name = $this->channelGroupModel->getItemById($channel->channelGroup);
 
-                /* add <br> element */
-                $currentName = $inputId == "nameId" ? $channel->name : $channel->description;
-                /* find the position of the first occurrence of a case-insensitive */
-                $pos = stripos($currentName, $value);
-                $length = strlen($currentName);
-                $valueLength = strlen($value);
-                $newName = "";
-
-                for ($i = 0; $i < $length; $i++) {
-                    $letter = $currentName[$i];
-                    /* compare each letter from value and db */
-                    if ($i == $pos) {
-                        $newName .= "<b>";
-                        for ($j = $i; $j < $valueLength + $i; $j++) {
-                            $newName .= $currentName[$j];
-                        }
-                        $i = $j - 1;
-                        $newName .= "</b>";
-                    }
-                    else {
-                        $newName .= $letter;
-                    }
-                }
-
-                if ($inputId == "nameId") {
+                    /* add <b> element */
+                    $newName = $this->channelsModel->getEditedName($channel->name, $nameInput);
                     $item["name"] = Nette\Utils\Html::el()->setHtml($newName);
                     $item["description"] = $channel->description;
+                    $channelGroups[$name->name][] = $item;
                 }
-                else {
+            }
+            else {
+                $this->channelsModel->editChannelStorageByName($channelGroups, $nameInput);
+            }
+        }
+
+        /* description */
+        if ($description != "") {
+            if (empty($channelGroups)) {
+                $channels = $this->channelsModel->getItemsLike("description", $description)
+                    ->order("order")->fetchAll();
+                $name = NULL;
+
+                foreach ($channels as $channel) {
+                    $item = [];
+                    if (!$channel || ($channel && !$channel->channelGroup))
+                        continue;
+
+                    if (!$name || $name != $channel->channelGroup)
+                        $name = $this->channelGroupModel->getItemById($channel->channelGroup);
+
+                    /* add <br> element */
+                    $newName = $this->channelsModel->getEditedName($channel->description, $nameInput);
                     $item["name"] = $channel->name;
                     $item["description"] = Nette\Utils\Html::el()->setHtml($newName);
+                    $channelGroups[$name->name][] = $item;
                 }
-
-                $channelGroups[$name->name][] = $item;
+            }
+            else {
+                $this->channelsModel->editChannelStorageByDescription($channelGroups, $description);
             }
         }
 

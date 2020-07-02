@@ -38,5 +38,4 @@ class BaseModel
     {
         return $this->db->table($this->table)->where($column.' LIKE ?', '%'.$value.'%');
     }
-
 }

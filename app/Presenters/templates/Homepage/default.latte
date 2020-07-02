@@ -10,7 +10,7 @@
                             </div>
                             <div class="filter-input">
                                 <input n:name=channelGroup type="text" id="channelGroupId" autocomplete="off"
-                                                           oninput="inputChange('channelGroupId', this.value)">
+                                                           oninput="inputChange()">
                             </div>
                         </div>
 
@@ -20,7 +20,7 @@
                             </div>
                             <div class="filter-input second">
                                 <input n:name=name type="text" id="nameId" autocomplete="off"
-                                                   oninput="inputChange('nameId', this.value)">
+                                                   oninput="inputChange()">
                             </div>
                         </div>
 
@@ -30,7 +30,7 @@
                             </div>
                             <div class="filter-input">
                                 <input n:name=description type="text" id="descriptionId" autocomplete="off"
-                                                          oninput="inputChange('descriptionId',this.value)">
+                                                          oninput="inputChange()">
                             </div>
                         </div>
                     </div>
@@ -74,11 +74,15 @@
     </div>
 
     <script type="text/javascript">
-        function inputChange(id, value) {
+        function inputChange() {
             $.nette.ajax({
                 type: 'GET',
                 url: {link inputChange!},
-                data: {"inputId": id, "value": value},
+                data: {
+                    "groupInput": $("input[name=channelGroup]").val(),
+                    "nameInput": $("input[name=name]").val(),
+                    "description": $("input[name=description]").val(),
+                },
                 error: function (xhr, ajaxOptions, thrownError) {
                     console.log(xhr.status);
                     console.log(thrownError);
