@@ -115,7 +115,7 @@ final class HomepagePresenter extends Nette\Application\UI\Presenter
                         $name = $this->channelGroupModel->getItemById($channel->channelGroup);
 
                     /* add <b> element */
-                    $newName = $this->channelsModel->getEditedName($channel->description, $nameInput);
+                    $newName = $this->channelsModel->getEditedName($channel->description, $description);
                     $item["name"] = $channel->name;
                     $item["description"] = Nette\Utils\Html::el()->setHtml($newName);
                     $channelGroups[$name->name][] = $item;
