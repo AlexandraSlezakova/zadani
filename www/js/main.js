@@ -10,7 +10,8 @@ $(document).ready(function() {
         "sDom": 'Rfrtlip',
     });
 
-    $('input').on('input', function() {
+
+    $('input, select').on('input', function() {
         $("#frm-filterForm").submit();
     });
 
@@ -30,7 +31,7 @@ $(document).ready(function() {
                     "ordering": false,
                     "sDom": 'Rfrtlip',
                 } )
-            }
+            },
         });
 
         return false;

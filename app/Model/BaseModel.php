@@ -22,22 +22,23 @@ class BaseModel
         $this->db = $db;
     }
 
-    /**
-     * Add <b> element to searched part of word
-     * @param string $name name of channel
-     * @param string $inputValue value from input
-     * @return string string with <b> element
-     */
-    public function getEditedName($name, $inputValue)
+    public function getItemsByChannelGroup(array $channelGroup, string $name, string $description)
     {
-        $array = str_split($name);
-        $noAccentsName = Filter::removeAccents($name);
-        $noAccentsInput = Filter::removeAccents($inputValue);
-        $valueLength = strlen($noAccentsInput);
-        $pos = stripos($noAccentsName, $noAccentsInput);
+        return $this->db->query("SELECT Channels.name, Channels.description,
+                Channels.channelGroup, ChannelGroups.name as groupName FROM Channels
+                JOIN ChannelGroups ON ChannelGroups.id = Channels.channelGroup
+                WHERE ChannelGroups.id IN('".implode("','",$channelGroup)."') 
+                AND Channels.name LIKE ? AND Channels.description LIKE ?
+                ORDER BY ChannelGroups.order, Channels.order",
+            '%'.$name.'%', '%'.$description.'%');
+    }
 
-        $newName = Filter::highlightString($pos, sizeof($array), $name, $valueLength);
-
-        return \Nette\Utils\Html::el()->setHtml($newName);
+    public function getItemsByName(string $name, string $description)
+    {
+        return $this->db->query("SELECT Channels.name, Channels.description,
+                Channels.channelGroup, ChannelGroups.name as groupName FROM Channels
+                JOIN ChannelGroups ON ChannelGroups.id = Channels.channelGroup
+                WHERE Channels.name LIKE ? AND Channels.description LIKE ?
+                ORDER BY ChannelGroups.order, Channels.order",'%'.$name.'%', '%'.$description.'%');
     }
 }

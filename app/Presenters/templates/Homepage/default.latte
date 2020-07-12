@@ -6,10 +6,10 @@
                     <div class="row">
                         <div class="col-12 col-md-4 pr-0-md">
                             <div class="filter-label">
-                                <label for="channelGroupId">Skupina</label>
+                                <label for="frm-filterForm-channelGroup">Skupina</label>
                             </div>
                             <div class="filter-input">
-                                <input n:name=channelGroup type="text" id="channelGroupId" autocomplete="off">
+                                {input channelGroup}
                             </div>
                         </div>
 
@@ -25,6 +25,9 @@
                         <div class="col-12 col-md-4 pl-0-md">
                             <div class="filter-label">
                                 <label for="descriptionId">Popis</label>
+                                <a class="close" title="Reset" n:href="reset!">
+                                    <span>&times;</span>
+                                </a>
                             </div>
                             <div class="filter-input">
                                 <input n:name=description type="text" id="descriptionId" autocomplete="off">
@@ -46,17 +49,17 @@
 
                             <tbody>
 
-                            {foreach $channelGroups as $groupName => $group}
+                            {foreach $channelGroups as $group}
                                 <tr class="group-name">
                                     <td colspan="3">
-                                        {$groupName}
+                                        {$group[0]["groupName"]}
                                     </td>
                                     <td class="d-none"></td>
                                     <td class="d-none"></td>
                                 </tr>
                                 {foreach $group as $channel}
                                     <tr>
-                                        <td>{$groupName}</td>
+                                        <td>{$channel["groupName"]}</td>
                                         <td>{$channel["name"]}</td>
                                         <td>{$channel["description"]}</td>
                                     </tr>

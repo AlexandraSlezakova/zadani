@@ -1,26 +1,29 @@
 <?php
 namespace App\Presenters;
 
+use App\Filters\Filter;
+use Nette;
 use Nette\Application\UI\Form;
 
 final class HomepagePresenter extends BasePresenter
 {
     public $channelGroups = [];
 
-    private $formSuccess = 0;
+    private $formInput = 0;
 
     public function beforeRender()
     {
-        if (!$this->formSuccess) {
+        if (!$this->formInput) {
             /* get all ordered channels */
             $channels = $this->baseModel->db
-                ->query("SELECT Channels.name, Channels.description, ChannelGroups.name as groupName FROM Channels 
-                          JOIN ChannelGroups ON ChannelGroups.id = Channels.channelGroup 
-                          ORDER BY ChannelGroups.order, Channels.order")
+                ->query("SELECT Channels.name, Channels.description, Channels.channelGroup, 
+                              ChannelGroups.name as groupName FROM Channels 
+                              JOIN ChannelGroups ON ChannelGroups.id = Channels.channelGroup 
+                              ORDER BY ChannelGroups.order, Channels.order")
                 ->fetchAll();
 
             foreach ($channels as $channel) {
-                $this->channelGroups[$channel->groupName][] = $channel;
+                $this->channelGroups[$channel->channelGroup][] = $channel;
             }
         }
     }
@@ -34,7 +37,12 @@ final class HomepagePresenter extends BasePresenter
     {
         $form = new Form;
 
-        $form->addText('channelGroup', 'Skupina');
+        $groups = [];
+        foreach ($this->channelGroups as $key => $channelGroup) {
+            $groups[$key] = $channelGroup[0]["groupName"];
+        }
+
+        $form->addMultiSelect('channelGroup', 'Skupina', $groups);
         $form->addText('name', 'Názov');
         $form->addText('description', 'Popis');
 
@@ -42,39 +50,50 @@ final class HomepagePresenter extends BasePresenter
             ->setAttribute("class", "ajax");
 
         $form->onSuccess[] = [$this, "processForm"];
+        $form->onError[] = [$this, "errorForm"];
 
         return $form;
     }
 
+    public function errorForm()
+    {
+        bdump("error");
+    }
+
     public function processForm(Form $form)
     {
-        $values = $form->getValues();
+        $values = $form->getHttpData();
 
-        if ($values->channelGroup || $values->name || $values->description) {
+        if (!empty($values)) {
             $this->channelGroups = [];
-            $this->formSuccess = 1;
+            $this->formInput = 1;
 
-            $channels = $this->baseModel->db->query("SELECT Channels.name, Channels.description, ChannelGroups.name as groupName FROM Channels 
-                JOIN ChannelGroups ON ChannelGroups.id = Channels.channelGroup 
-                WHERE ChannelGroups.name LIKE ? AND Channels.name LIKE ? AND Channels.description LIKE ? 
-                ORDER BY ChannelGroups.order, Channels.order", '%'.$values->channelGroup.'%', '%'.$values->name.'%', '%'.$values->description.'%');
+            $channels = !empty($values["channelGroup"])
+                ? $this->baseModel->getItemsByChannelGroup($values["channelGroup"], $values["name"], $values["description"])
+                : $this->baseModel->getItemsByName($values["name"], $values["description"]);
 
             foreach ($channels as $channel) {
-                $name = $values->name
-                    ? $this->baseModel->getEditedName($channel->name, $values->name)
+                $name = $values["name"]
+                    ? Filter::getEditedName($channel->name, $values["name"])
                     : $channel->name;
 
-                $description = $values->description
-                    ? $this->baseModel->getEditedName($channel->description, $values->description)
+                $description = $values["description"]
+                    ? Filter::getEditedName($channel->description, $values["description"])
                     : $channel->description;
 
-                $this->channelGroups[$channel->groupName][] = ["name" => $name, "description" => $description];
+                $this->channelGroups[$channel->channelGroup][] = ["name" => $name, "description" => $description,
+                    "groupName" => $channel->groupName];
             }
         }
         else {
-            $this->formSuccess = 0;
+            $this->formInput = 0;
         }
 
         $this->redrawControl('tableSnippet');
+    }
+
+    public function handleReset()
+    {
+        $this->formInput = 0;
     }
 }

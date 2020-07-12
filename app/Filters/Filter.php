@@ -6,6 +6,25 @@ namespace App\Filters;
 class Filter
 {
     /**
+     * Add <b> element to searched part of word
+     * @param string $name name of channel
+     * @param string $inputValue value from input
+     * @return string string with <b> element
+     */
+    public static function getEditedName($name, $inputValue)
+    {
+        $array = str_split($name);
+        $noAccentsName = self::removeAccents($name);
+        $noAccentsInput = self::removeAccents($inputValue);
+        $valueLength = strlen($noAccentsInput);
+        $pos = stripos($noAccentsName, $noAccentsInput);
+
+        $newName = self::highlightString($pos, sizeof($array), $name, $valueLength);
+
+        return \Nette\Utils\Html::el()->setHtml($newName);
+    }
+
+    /**
      * Highlight of string with <b> element
      * @param int $position position of first occurrence of substring in string
      * @param int $end end of loop
@@ -38,6 +57,7 @@ class Filter
                 for ($j = $position; $j < $inputLength + $position; $j++) {
                     if (!$isHex || $j != $position) {
                         $letter = $string[$j];
+
                         if (preg_match('/[\x80-\xff]/', $letter)) {
                             $concat = $letter.$string[$j + 1];
                             $isHex = 1;
@@ -45,8 +65,8 @@ class Filter
                             $position++;
                         }
                         $newName .= $isHex ? $concat : $letter;
-                        $isHex = 0;
                     }
+                    $isHex = 0;
                 }
 
                 $i = $j - 1;
