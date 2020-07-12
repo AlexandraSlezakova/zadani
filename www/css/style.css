@@ -23,7 +23,7 @@ body,
 }
 .wrapper .result-table {
   width: 100%;
-  margin-bottom: 20px;
+  margin: 0 auto 20px auto !important;
 }
 .wrapper .result-table thead {
   display: none;

@@ -1,11 +1,9 @@
 <?php
 
-
 namespace App\Model;
 
 use Nette\Database\Context;
-use Nette\Database\Table\ActiveRow;
-use Nette\Database\Table\Selection;
+use App\Filters\Filter;
 
 class BaseModel
 {
@@ -24,18 +22,22 @@ class BaseModel
         $this->db = $db;
     }
 
-    public function getItemById($id): ActiveRow
+    /**
+     * Add <b> element to searched part of word
+     * @param string $name name of channel
+     * @param string $inputValue value from input
+     * @return string string with <b> element
+     */
+    public function getEditedName($name, $inputValue)
     {
-        return $this->db->table($this->table)->where("id", $id)->fetch();
-    }
+        $array = str_split($name);
+        $noAccentsName = Filter::removeAccents($name);
+        $noAccentsInput = Filter::removeAccents($inputValue);
+        $valueLength = strlen($noAccentsInput);
+        $pos = stripos($noAccentsName, $noAccentsInput);
 
-    public function getItems(): Selection
-    {
-        return $this->db->table($this->table);
-    }
+        $newName = Filter::highlightString($pos, sizeof($array), $name, $valueLength);
 
-    public function getItemsLike($column, $value): Selection
-    {
-        return $this->db->table($this->table)->where($column.' LIKE ?', '%'.$value.'%');
+        return \Nette\Utils\Html::el()->setHtml($newName);
     }
 }

@@ -1,36 +1,33 @@
 <?php
-
 namespace App\Presenters;
 
-use App\Model\ChannelGroupsModel;
-use App\Model\ChannelsModel;
-use Nette;
 use Nette\Application\UI\Form;
 
-
-final class HomepagePresenter extends Nette\Application\UI\Presenter
+final class HomepagePresenter extends BasePresenter
 {
-    /**
-     * @var ChannelsModel @inject
-     */
-    public $channelsModel;
+    public $channelGroups = [];
 
-    /**
-     * @var ChannelGroupsModel @inject
-     */
-    public $channelGroupModel;
+    private $formSuccess = 0;
 
-    public function actionDefault()
+    public function beforeRender()
     {
-        $groups = $this->channelGroupModel->getItems()->order("order");
-        $channelGroups = [];
+        if (!$this->formSuccess) {
+            /* get all ordered channels */
+            $channels = $this->baseModel->db
+                ->query("SELECT Channels.name, Channels.description, ChannelGroups.name as groupName FROM Channels 
+                          JOIN ChannelGroups ON ChannelGroups.id = Channels.channelGroup 
+                          ORDER BY ChannelGroups.order, Channels.order")
+                ->fetchAll();
 
-        foreach ($groups as $group) {
-            foreach ($group->related('Channels.channelGroup')->order("order") as $channel) {
-                $channelGroups[$group->name][] = $channel;
+            foreach ($channels as $channel) {
+                $this->channelGroups[$channel->groupName][] = $channel;
             }
         }
-        $this->template->channelGroups = $channelGroups;
+    }
+
+    public function renderDefault()
+    {
+        $this->template->channelGroups = $this->channelGroups;
     }
 
     protected function createComponentFilterForm(): Form
@@ -41,92 +38,43 @@ final class HomepagePresenter extends Nette\Application\UI\Presenter
         $form->addText('name', 'Názov');
         $form->addText('description', 'Popis');
 
+        $form->addSubmit("submit", "Submit")
+            ->setAttribute("class", "ajax");
+
+        $form->onSuccess[] = [$this, "processForm"];
+
         return $form;
     }
 
-    /**
-     * Handle input change
-     * Filtering all wanted values from inputs
-     * @param string $groupInput value from input channel group
-     * @param string $nameInput value from input name
-     * @param string $description value from input description
-     * @throws Nette\Application\AbortException
-     */
-    public function handleInputChange($groupInput, $nameInput, $description)
+    public function processForm(Form $form)
     {
-        if ($groupInput == "" && $nameInput == "" && $description == "") {
-            $this->redirect("Homepage:default");
-        }
+        $values = $form->getValues();
 
-        $channelGroups = [];
+        if ($values->channelGroup || $values->name || $values->description) {
+            $this->channelGroups = [];
+            $this->formSuccess = 1;
 
-        /* channel groups */
-        if ($groupInput != "") {
-            $groupNames = $this->channelGroupModel->getItemsLike("id", $groupInput)
-                ->order("order")->fetchAll();
+            $channels = $this->baseModel->db->query("SELECT Channels.name, Channels.description, ChannelGroups.name as groupName FROM Channels 
+                JOIN ChannelGroups ON ChannelGroups.id = Channels.channelGroup 
+                WHERE ChannelGroups.name LIKE ? AND Channels.name LIKE ? AND Channels.description LIKE ? 
+                ORDER BY ChannelGroups.order, Channels.order", '%'.$values->channelGroup.'%', '%'.$values->name.'%', '%'.$values->description.'%');
 
-            foreach ($groupNames as $group) {
-                foreach ($group->related('Channels.channelGroup')->order("order") as $channel) {
-                    $channelGroups[$group->name][] = $channel;
-                }
+            foreach ($channels as $channel) {
+                $name = $values->name
+                    ? $this->baseModel->getEditedName($channel->name, $values->name)
+                    : $channel->name;
+
+                $description = $values->description
+                    ? $this->baseModel->getEditedName($channel->description, $values->description)
+                    : $channel->description;
+
+                $this->channelGroups[$channel->groupName][] = ["name" => $name, "description" => $description];
             }
         }
-
-        /* names */
-        if ($nameInput != "") {
-            if (empty($channelGroups)) {
-                $channels = $this->channelsModel->getItemsLike("name", $nameInput)
-                    ->order("order")->fetchAll();
-                $name = NULL;
-
-                foreach ($channels as $channel) {
-                    $item = [];
-                    if (!$channel || ($channel && !$channel->channelGroup))
-                        continue;
-
-                    if (!$name || $name != $channel->channelGroup)
-                        $name = $this->channelGroupModel->getItemById($channel->channelGroup);
-
-                    /* add <b> element */
-                    $newName = $this->channelsModel->getEditedName($channel->name, $nameInput);
-                    $item["name"] = Nette\Utils\Html::el()->setHtml($newName);
-                    $item["description"] = $channel->description;
-                    $channelGroups[$name->name][] = $item;
-                }
-            }
-            else {
-                $this->channelsModel->editChannelStorageByName($channelGroups, $nameInput);
-            }
+        else {
+            $this->formSuccess = 0;
         }
 
-        /* description */
-        if ($description != "") {
-            if (empty($channelGroups)) {
-                $channels = $this->channelsModel->getItemsLike("description", $description)
-                    ->order("order")->fetchAll();
-                $name = NULL;
-
-                foreach ($channels as $channel) {
-                    $item = [];
-                    if (!$channel || ($channel && !$channel->channelGroup))
-                        continue;
-
-                    if (!$name || $name != $channel->channelGroup)
-                        $name = $this->channelGroupModel->getItemById($channel->channelGroup);
-
-                    /* add <b> element */
-                    $newName = $this->channelsModel->getEditedName($channel->description, $description);
-                    $item["name"] = $channel->name;
-                    $item["description"] = Nette\Utils\Html::el()->setHtml($newName);
-                    $channelGroups[$name->name][] = $item;
-                }
-            }
-            else {
-                $this->channelsModel->editChannelStorageByDescription($channelGroups, $description);
-            }
-        }
-
-        $this->template->channelGroups = $channelGroups;
         $this->redrawControl('tableSnippet');
     }
 }

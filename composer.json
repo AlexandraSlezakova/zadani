@@ -21,7 +21,8 @@
 		"latte/latte": "^2.5",
 		"tracy/tracy": "^2.6",
 		"ublaboo/datagrid": "^6.2",
-      	"ext-json": "*"
+      	"ext-json": "*",
+      "ext-iconv": "*"
     },
 	"require-dev": {
 		"nette/tester": "^2.0"

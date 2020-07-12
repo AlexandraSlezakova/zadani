@@ -20,6 +20,5 @@ di:
 
 services:
     - App\Model\BaseModel
-    - App\Model\ChannelGroupsModel
-    - App\Model\ChannelsModel
+
     router: App\Router\RouterFactory::createRouter

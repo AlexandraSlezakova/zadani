@@ -1,0 +1,26 @@
+{
+  "name": "zadani",
+  "homepage": "https://github.com/AlexandraSlezakova/zadani",
+  "authors": [
+    "Alexandra Slezakova <alexandra.slezak@gmail.com>>"
+  ],
+  "description": "Channel filter",
+  "main": "index.php",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "datatables.net": "^1.10.21",
+    "jquery": "^3.5.1",
+    "bootstrap": "4.0",
+    "nette.ajax.js": "^2.3.0",
+    "datatables.net-bs": "^2.1.1",
+    "datatables.net-dt": "^3.2.2",
+    "nette-forms": "^3.0.5"
+  }
+}
