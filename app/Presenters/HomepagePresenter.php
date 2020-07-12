@@ -42,7 +42,8 @@ final class HomepagePresenter extends BasePresenter
             $groups[$key] = $channelGroup[0]["groupName"];
         }
 
-        $form->addMultiSelect('channelGroup', 'Skupina', $groups);
+        $form->addMultiSelect('channelGroup', 'Skupina', $groups)
+            ->setHtmlAttribute("autocomplete", "off");
         $form->addText('name', 'Názov');
         $form->addText('description', 'Popis');
 
