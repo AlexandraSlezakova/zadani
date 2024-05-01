@@ -1,6 +1,5 @@
 vendor
 temp
-.idea
 app/config/local.neon
 bin
 www/bower_components
